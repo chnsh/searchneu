@@ -27,6 +27,7 @@ import macros from './macros';
 import notifyer from './notifyer';
 import Updater from './updater';
 import database from './database';
+import Calendar from './calendar';
 import DataLib from '../common/classModels/DataLib';
 // import psylink from './scrapers/psylink/psylink';
 
@@ -288,11 +289,13 @@ async function loadPromises() {
     };
 
     Updater.create(dataLib);
+    let calendar = Calendar.create(dataLib);
 
     return {
       search: search.create(employeeMap, elasticlunr.Index.load(employeesSearchIndex), dataLib, searchIndexies),
       dataLib: dataLib,
       searchIndexies: searchIndexies,
+      calendar: calendar,
     };
   } catch (e) {
     macros.error('Error:', e);
@@ -367,6 +370,13 @@ app.get('/search', wrap(async (req, res) => {
   res.setHeader('Content-Type', 'application/json; charset=UTF-8');
   res.send(string);
 }));
+
+app.get('/calendar/:hash', async (req, res) => {
+  let calendar = (await promises).calendar;
+
+  // Fetch calendar
+  res.send(calendar.get(req.params.hash));
+})
 
 
 // for Facebook verification of the endpoint.
